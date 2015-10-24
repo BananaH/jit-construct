@@ -42,10 +42,21 @@ jit0-x64: tests/jit0-x64.c
 jit-x64: dynasm-driver.c jit-x64.h
 	$(CC) $(CFLAGS) -o $@ -DJIT=\"jit-x64.h\" \
 		dynasm-driver.c
+jit-x64-opt: dynasm-driver.c jit-x64-opt.h
+	$(CC) $(CFLAGS) -o $@ -DJIT=\"jit-x64-opt.h\" \
+		dynasm-driver.c
 jit-x64.h: jit-x64.dasc
 	        $(LUA) dynasm/dynasm.lua -o $@ jit-x64.dasc
+
+jit-x64-opt.h: jit-x64-opt.dasc
+	        $(LUA) dynasm/dynasm.lua -o $@ jit-x64-opt.dasc
+
 run-jit-x64: jit-x64
 	./jit-x64 progs/hello.b && objdump -D -b binary \
+		-mi386 -Mx86-64 /tmp/jitcode
+
+run-jit-x64-opt: jit-x64-opt
+	./jit-x64-opt progs/hello.b && objdump -D -b binary \
 		-mi386 -Mx86-64 /tmp/jitcode
 
 jit0-arm: tests/jit0-arm.c
@@ -66,6 +77,12 @@ bench-jit-x64: jit-x64
 	@echo
 	@env PATH='.:${PATH}' BF_RUN='$<' tests/bench.py
 
+bench-jit-x64-opt: jit-x64-opt
+	@echo
+	@echo Executing Brainf*ck benchmark suite. Be patient.
+	@echo
+	@env PATH='.:${PATH}' BF_RUN='$<' tests/bench.py
+
 test: test_stack jit0-x64 jit0-arm
 	./test_stack
 	(./jit0-x64 42 ; echo $$?)
@@ -79,3 +96,4 @@ clean:
 	      hello-x86 hello-x64 hello-arm hello.s \
 	      test_stack jit0-x64 jit0-arm \
 	      jit-x64.h jit-arm.h
+	      jit-x64-opt.h
