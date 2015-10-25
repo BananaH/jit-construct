@@ -41,32 +41,28 @@ int main(int argc, char *argv[])
 		temp=0;
 		switch (*p) {
 		case '>':
+		case '<':
 			do{
-				temp++;
-			}while( *(++p) == '>');
+				if(*p == '>')
+					temp++;
+				else
+					temp--;
+				p++;
+			}while( *p && (*p == '<' || *p == '>') );
 			p--;
 			| add PTR, temp
 			break;
-		case '<':
-			do{
-				temp++;
-			}while( *(++p) == '<');
-			p--;
-			| sub PTR, temp
-			break;
 		case '+':
-			do{
-				temp++;
-			}while( *(++p) == '+');
-			p--;
-			| add byte[PTR], temp
-			break;
 		case '-':
 			do{
-				temp++;
-			}while( *(++p) == '-');
+				if(*p == '+')
+					temp++;
+				else
+					temp--;
+				p++;
+			}while( *p && (*p == '+' || *p == '-') );
 			p--;
-			| sub byte[PTR], temp
+			| add byte[PTR], temp
 			break;
 		case '.':
 			|  movzx edi, byte [PTR]
