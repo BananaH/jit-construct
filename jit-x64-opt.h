@@ -15,11 +15,11 @@
 #endif
 #line 5 "jit-x64-opt.dasc"
 //|.actionlist actions
-static const unsigned char actions[69] = {
+static const unsigned char actions[78] = {
   83,72,137,252,251,255,72,129,195,239,255,72,129,252,235,239,255,128,3,235,
   255,128,43,235,255,15,182,59,72,184,237,237,252,255,208,255,72,184,237,237,
-  252,255,208,136,3,255,198,3,0,255,128,59,0,15,132,245,249,255,128,59,0,15,
-  133,245,249,255,91,195,255
+  252,255,208,136,3,255,198,3,0,255,138,19,0,83,1,198,3,0,255,128,59,0,15,132,
+  245,249,255,128,59,0,15,133,245,249,255,91,195,255
 };
 
 #line 6 "jit-x64-opt.dasc"
@@ -122,14 +122,23 @@ int main(int argc, char *argv[])
 				p+=2;
 				break;
 			}
+			if( (*(p+1) == '>') && (*(p+2) == '+') && (*(p+3) == '<') && (*(p+4) == '-') && (*(p+5) == ']') ){	//[ >+<- ]
+				//| mov dl, byte[PTR]
+				//| add byte [PTR+1], dl
+				//| mov byte [PTR], 0
+				dasm_put(Dst, 50);
+#line 93 "jit-x64-opt.dasc"
+				p+=5;
+				break;
+			}
 			maxpc += 2;
 			*top++ = maxpc;
 			dasm_growpc(&state, maxpc);
 			//|  cmp  byte [PTR], 0
 			//|  je   =>(maxpc-2)
 			//|=>(maxpc-1):
-			dasm_put(Dst, 50, (maxpc-2), (maxpc-1));
-#line 95 "jit-x64-opt.dasc"
+			dasm_put(Dst, 59, (maxpc-2), (maxpc-1));
+#line 102 "jit-x64-opt.dasc"
 			break;
 		case ']':
 			if (top == pcstack) err("Unmatched ']'");
@@ -137,8 +146,8 @@ int main(int argc, char *argv[])
 			//|  cmp  byte [PTR], 0
 			//|  jne  =>(*top-1)
 			//|=>(*top-2):
-			dasm_put(Dst, 58, (*top-1), (*top-2));
-#line 102 "jit-x64-opt.dasc"
+			dasm_put(Dst, 67, (*top-1), (*top-2));
+#line 109 "jit-x64-opt.dasc"
 			break;
 		}
 	}
@@ -146,8 +155,8 @@ int main(int argc, char *argv[])
 	// Function epilogue.
 	//|  pop  PTR
 	//|  ret
-	dasm_put(Dst, 66);
-#line 109 "jit-x64-opt.dasc"
+	dasm_put(Dst, 75);
+#line 116 "jit-x64-opt.dasc"
 
 	void (*fptr)(char*) = jitcode(&state);
 	char *mem = calloc(30000, 1);
